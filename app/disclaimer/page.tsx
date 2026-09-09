@@ -1,0 +1,1 @@
+export default function Disclaimer(){return <main className="mx-auto max-w-3xl px-4 py-14"><h1 className="text-4xl font-black">Disclaimer</h1><p className="mt-5 leading-8 text-gray-600">Financial and health calculators provide estimates and are not professional medical or financial advice. Verify important results independently.</p></main>}

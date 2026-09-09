@@ -1,0 +1,1 @@
+export default function About(){return <main className="mx-auto max-w-3xl px-4 py-14"><h1 className="text-4xl font-black">About ToolNest</h1><p className="mt-5 leading-8 text-gray-600">ToolNest is a collection of practical online utilities built to make everyday calculations, conversions, developer tasks and productivity work faster.</p></main>}

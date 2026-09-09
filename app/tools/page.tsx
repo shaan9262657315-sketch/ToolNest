@@ -1,0 +1,3 @@
+import { tools, categories } from "@/lib/tools";
+import { ToolCard } from "@/components/ToolCard";
+export default function ToolsPage(){return <main className="mx-auto max-w-7xl px-4 py-12"><h1 className="text-4xl font-black">All Tools</h1><p className="mt-3 max-w-2xl text-gray-500">Browse the complete ToolNest collection of free online utilities.</p>{categories.map(c=><section key={c} className="mt-12"><h2 className="mb-5 text-2xl font-black">{c}</h2><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{tools.filter(t=>t.category===c).map(t=><ToolCard key={t.slug} tool={t}/>)}</div></section>)}</main>}

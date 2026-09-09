@@ -1,0 +1,1 @@
+export default function Contact(){return <main className="mx-auto max-w-3xl px-4 py-14"><h1 className="text-4xl font-black">Contact</h1><p className="mt-5 leading-8 text-gray-600">For feedback, bug reports or tool suggestions, add your preferred contact address here before publishing the site.</p></main>}

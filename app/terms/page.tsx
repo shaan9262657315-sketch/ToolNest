@@ -1,0 +1,1 @@
+export default function Terms(){return <main className="mx-auto max-w-3xl px-4 py-14"><h1 className="text-4xl font-black">Terms & Conditions</h1><p className="mt-5 leading-8 text-gray-600">ToolNest provides utilities for general informational use. Review and customize these terms before production launch.</p></main>}
