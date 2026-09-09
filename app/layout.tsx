@@ -1,8 +1,11 @@
 ﻿import "./globals.css";
 import { Header } from "@/components/Header";
+import type { Metadata } from "next";
 
-export const metadata = {
-  metadataBase: new URL("https://toolnest.example.com"),
+const SITE_URL = "https://tool-nest-phi.vercel.app";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
 
   title: {
     default: "ToolNest — Free Online Tools | Shaan E Sahil",
@@ -10,7 +13,7 @@ export const metadata = {
   },
 
   description:
-    "ToolNest by Shaan E Sahil — free online calculators, converters, developer tools, student utilities, PDF tools and productivity tools.",
+    "ToolNest by Shaan E Sahil — free online calculators, converters, student tools, PDF tools and productivity tools.",
 
   keywords: [
     "ToolNest",
@@ -19,7 +22,6 @@ export const metadata = {
     "online calculators",
     "online converters",
     "PDF tools",
-    "developer tools",
     "student tools",
     "productivity tools",
   ],
@@ -28,16 +30,25 @@ export const metadata = {
   creator: "Shaan E Sahil",
   publisher: "Shaan E Sahil",
 
+  verification: {
+    google: "e3ade397ba1ed86c",
+  },
+
   robots: {
     index: true,
     follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
   },
 
   openGraph: {
+    type: "website",
+    url: SITE_URL,
     title: "ToolNest — Free Online Tools",
     description:
-      "Free calculators, converters, developer tools, PDF tools, student utilities and more.",
-    type: "website",
+      "Free calculators, converters, student tools, PDF tools and productivity tools.",
     siteName: "ToolNest",
   },
 
@@ -45,7 +56,7 @@ export const metadata = {
     card: "summary",
     title: "ToolNest — Free Online Tools",
     description:
-      "Free online calculators, converters, PDF tools, developer tools and more.",
+      "Free online calculators, converters, PDF tools and student tools.",
   },
 };
 
