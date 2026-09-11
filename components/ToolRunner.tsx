@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
@@ -25,7 +25,7 @@ const n = (v: string) => {
 };
 
 const f = (v: number) =>
-  Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "—";
+  Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "â€”";
 
 function Box({ children }: { children: React.ReactNode }) {
   return <div className="card p-6">{children}</div>;
@@ -311,7 +311,162 @@ function DownloadButton({
 }
 
 /* ---------- Main dispatcher ---------- */
+function GpaCalculatorTool() {
+  const [subjectCount, setSubjectCount] = useState(4);
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [result, setResult] = useState("");
 
+  const handleCountChange = (count: number) => {
+    setSubjectCount(count);
+    setValues({});
+    setResult("");
+  };
+
+  const handleChange = (key: string, value: string) => {
+    setValues((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  const calculateGPA = () => {
+    let totalCredits = 0;
+    let weightedPoints = 0;
+
+    for (let i = 1; i <= subjectCount; i++) {
+      const credits = Number(values[`credits${i}`] || 0);
+      const grade = Number(values[`grade${i}`] || 0);
+
+      if (credits > 0) {
+        totalCredits += credits;
+        weightedPoints += credits * grade;
+      }
+    }
+
+    if (totalCredits <= 0) {
+      setResult("Enter valid credits for at least one subject.");
+      return;
+    }
+
+    const gpa = weightedPoints / totalCredits;
+
+    setResult(
+      `Total Credits: ${totalCredits}\nGPA: ${gpa.toFixed(2)}`
+    );
+  };
+
+  const reset = () => {
+    setValues({});
+    setResult("");
+    setSubjectCount(4);
+  };
+
+  return (
+    <div className="card p-6">
+      <div className="mb-6">
+        <label className="block space-y-2">
+          <span className="font-semibold">Number of Subjects</span>
+
+          <select
+            className="tool-input w-full"
+            value={subjectCount}
+            onChange={(e) => handleCountChange(Number(e.target.value))}
+          >
+            {Array.from({ length: 15 }, (_, i) => i + 1).map((count) => (
+              <option key={count} value={count}>
+                {count} {count === 1 ? "Subject" : "Subjects"}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <div className="grid gap-4">
+        {Array.from({ length: subjectCount }, (_, index) => {
+          const subjectNumber = index + 1;
+
+          return (
+            <div
+              key={subjectNumber}
+              className="rounded-xl border p-4"
+            >
+              <h3 className="mb-3 font-bold">
+                Subject {subjectNumber}
+              </h3>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block space-y-2">
+                  <span className="font-semibold">Credits</span>
+
+                  <input
+                    className="tool-input"
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={values[`credits${subjectNumber}`] || ""}
+                    onChange={(e) =>
+                      handleChange(
+                        `credits${subjectNumber}`,
+                        e.target.value
+                      )
+                    }
+                    placeholder="4"
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="font-semibold">Grade Point</span>
+
+                  <input
+                    className="tool-input"
+                    type="number"
+                    min="0"
+                    max="10"
+                    step="0.1"
+                    value={values[`grade${subjectNumber}`] || ""}
+                    onChange={(e) =>
+                      handleChange(
+                        `grade${subjectNumber}`,
+                        e.target.value
+                      )
+                    }
+                    placeholder="9"
+                  />
+                </label>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="mt-4 text-sm opacity-75">
+        GPA is calculated using credit-weighted grade points.
+      </p>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          onClick={calculateGPA}
+          className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white hover:bg-indigo-700"
+        >
+          Calculate GPA
+        </button>
+
+        <button
+          onClick={reset}
+          className="rounded-xl border px-5 py-3 font-bold"
+        >
+          Reset
+        </button>
+      </div>
+
+      {result && (
+        <div className="mt-5 whitespace-pre-line rounded-xl border p-4 font-semibold">
+          {result}
+        </div>
+      )}
+    </div>
+  );
+}
 export function ToolRunner({ slug }: { slug: string }) {
   switch (slug) {
     case "percentage-calculator":
@@ -372,19 +527,40 @@ export function ToolRunner({ slug }: { slug: string }) {
     case "days-between-dates-calculator":
       return <DateDifferenceTool />;
 
-    case "cgpa-to-percentage-calculator":
+        case "cgpa-to-percentage-calculator":
       return (
         <FormTool
-          fields={[{ key: "cgpa", label: "CGPA", type: "number", min: 0, max: 10, step: "0.01" }]}
+          fields={[
+            {
+              key: "cgpa",
+              label: "CGPA",
+              type: "number",
+              min: 0,
+              max: 10,
+              step: "0.01",
+            },
+          ]}
           compute={(v) => `${f(n(v.cgpa) * 9.5)}%`}
           note="Uses the common CGPA × 9.5 conversion. Check your institution's official formula if it differs."
         />
       );
 
+    case "gpa-calculator":
+      return <GpaCalculatorTool />;
+
     case "percentage-to-cgpa-calculator":
       return (
         <FormTool
-          fields={[{ key: "percentage", label: "Percentage", type: "number", min: 0, max: 100, step: "0.01" }]}
+          fields={[
+            {
+              key: "percentage",
+              label: "Percentage",
+              type: "number",
+              min: 0,
+              max: 100,
+              step: "0.01",
+            },
+          ]}
           compute={(v) => f(n(v.percentage) / 9.5)}
         />
       );
@@ -392,7 +568,16 @@ export function ToolRunner({ slug }: { slug: string }) {
     case "sgpa-percentage":
       return (
         <FormTool
-          fields={[{ key: "sgpa", label: "SGPA", type: "number", min: 0, max: 10, step: "0.01" }]}
+          fields={[
+            {
+              key: "sgpa",
+              label: "SGPA",
+              type: "number",
+              min: 0,
+              max: 10,
+              step: "0.01",
+            },
+          ]}
           compute={(v) => `${f(n(v.sgpa) * 10)}%`}
           note="Uses SGPA × 10 as a general conversion."
         />
@@ -737,7 +922,7 @@ export function ToolRunner({ slug }: { slug: string }) {
           ]}
           compute={(v) => {
             const profit = (n(v.sell) - n(v.buy)) * n(v.quantity);
-            return `Profit/Loss: ${f(profit)}\nReturn: ${n(v.buy) ? f(((n(v.sell) - n(v.buy)) / n(v.buy)) * 100) : "—"}%`;
+            return `Profit/Loss: ${f(profit)}\nReturn: ${n(v.buy) ? f(((n(v.sell) - n(v.buy)) / n(v.buy)) * 100) : "â€”"}%`;
           }}
         />
       );
@@ -992,7 +1177,7 @@ export function ToolRunner({ slug }: { slug: string }) {
       return <TextTool button="Format JSON" transform={(text) => JSON.stringify(JSON.parse(text), null, 2)} />;
 
     case "json-validator":
-      return <TextTool button="Validate JSON" transform={(text) => { JSON.parse(text); return "Valid JSON ✓"; }} />;
+      return <TextTool button="Validate JSON" transform={(text) => { JSON.parse(text); return "Valid JSON âœ“"; }} />;
 
     case "csv-json-converter":
       return <CSVJSONTool direction="to-json" />;
@@ -1222,7 +1407,7 @@ function FractionTool() {
       <label className="mt-4 block space-y-2 text-sm font-semibold">
         Operation
         <select className="tool-input" value={op} onChange={(e) => setOp(e.target.value)}>
-          <option>+</option><option>-</option><option>×</option><option>÷</option>
+          <option>+</option><option>-</option><option>Ã—</option><option>Ã·</option>
         </select>
       </label>
       <ActionButtons
@@ -1232,8 +1417,8 @@ function FractionTool() {
           let value = 0;
           if (op === "+") value = x / y + z / w;
           if (op === "-") value = x / y - z / w;
-          if (op === "×") value = (x / y) * (z / w);
-          if (op === "÷") value = (x / y) / (z / w);
+          if (op === "Ã—") value = (x / y) * (z / w);
+          if (op === "Ã·") value = (x / y) / (z / w);
           setOut(`Decimal Result: ${f(value)}`);
         }}
         onReset={() => { setA(""); setB(""); setC(""); setD(""); setOut(""); }}
@@ -1522,7 +1707,7 @@ function FlashcardTool() {
 function MatrixTool() {
   const [a,setA]=useState("1 2\n3 4"),[b,setB]=useState("5 6\n7 8"),[op,setOp]=useState("+"),[out,setOut]=useState("");
   const parse=(s:string)=>s.trim().split(/\n/).map(r=>r.trim().split(/\s+/).map(Number));
-  return <Box><div className="grid gap-4 md:grid-cols-2"><textarea className="tool-input min-h-32" value={a} onChange={e=>setA(e.target.value)} /><textarea className="tool-input min-h-32" value={b} onChange={e=>setB(e.target.value)} /></div><select className="tool-input mt-4" value={op} onChange={e=>setOp(e.target.value)}><option>+</option><option>-</option><option>×</option></select><ActionButtons onRun={()=>{const x=parse(a),y=parse(b);if(x.length!==2||y.length!==2||x.some(r=>r.length!==2)||y.some(r=>r.length!==2))return setOut("Enter two 2×2 matrices.");const z=x.map((r,i)=>r.map((v,j)=>op==="+"?v+y[i][j]:op==="-"?v-y[i][j]:x[i][0]*y[0][j]+x[i][1]*y[1][j]));setOut(z.map(r=>r.join("  ")).join("\n"))}} onReset={()=>setOut("")} label="Calculate Matrix"/>{out&&<Result value={out}/>}</Box>;
+  return <Box><div className="grid gap-4 md:grid-cols-2"><textarea className="tool-input min-h-32" value={a} onChange={e=>setA(e.target.value)} /><textarea className="tool-input min-h-32" value={b} onChange={e=>setB(e.target.value)} /></div><select className="tool-input mt-4" value={op} onChange={e=>setOp(e.target.value)}><option>+</option><option>-</option><option>Ã—</option></select><ActionButtons onRun={()=>{const x=parse(a),y=parse(b);if(x.length!==2||y.length!==2||x.some(r=>r.length!==2)||y.some(r=>r.length!==2))return setOut("Enter two 2Ã—2 matrices.");const z=x.map((r,i)=>r.map((v,j)=>op==="+"?v+y[i][j]:op==="-"?v-y[i][j]:x[i][0]*y[0][j]+x[i][1]*y[1][j]));setOut(z.map(r=>r.join("  ")).join("\n"))}} onReset={()=>setOut("")} label="Calculate Matrix"/>{out&&<Result value={out}/>}</Box>;
 }
 
 /* ---------- Image tools ---------- */
@@ -1530,7 +1715,7 @@ function MatrixTool() {
 function ImageTool({slug}:{slug:string}) {
   const [file,setFile]=useState<File|null>(null);const [url,setUrl]=useState("");const [width,setWidth]=useState("");const [height,setHeight]=useState("");const [quality,setQuality]=useState("0.8");
   const process=()=>{if(!file)return;const img=new Image();const object=URL.createObjectURL(file);img.onload=()=>{const canvas=document.createElement("canvas");canvas.width=slug==="image-resizer"&&n(width)?n(width):img.width;canvas.height=slug==="image-resizer"&&n(height)?n(height):img.height;const ctx=canvas.getContext("2d");if(!ctx)return;ctx.drawImage(img,0,0,canvas.width,canvas.height);const type=slug==="png-to-jpg"?"image/jpeg":slug==="svg-to-png"?"image/png":"image/jpeg";canvas.toBlob(blob=>{if(blob)setUrl(URL.createObjectURL(blob))},type,slug==="image-compressor"?Math.max(.1,Math.min(1,n(quality)||.8)):.9);};img.src=object};
-  return <Box><input type="file" accept="image/*" onChange={e=>setFile(e.target.files?.[0]||null)} className="block w-full rounded-xl border p-3"/>{slug==="image-resizer"&&<div className="mt-4 grid gap-4 md:grid-cols-2"><FieldInput field={{key:"w",label:"New Width (px)",type:"number"}} value={width} onChange={setWidth}/><FieldInput field={{key:"h",label:"New Height (px)",type:"number"}} value={height} onChange={setHeight}/></div>}{slug==="image-compressor"&&<div className="mt-4"><FieldInput field={{key:"q",label:"JPEG Quality (0.1–1)",type:"number",min:.1,max:1,step:"0.1"}} value={quality} onChange={setQuality}/></div>}<ActionButtons onRun={process} onReset={()=>{setFile(null);setUrl("")}} label={slug==="image-compressor"?"Compress Image":"Process Image"}/>{url&&<DownloadButton href={url} name={slug==="png-to-jpg"?"converted.jpg":slug==="svg-to-png"?"converted.png":"toolnest-image.jpg"}/>}</Box>;
+  return <Box><input type="file" accept="image/*" onChange={e=>setFile(e.target.files?.[0]||null)} className="block w-full rounded-xl border p-3"/>{slug==="image-resizer"&&<div className="mt-4 grid gap-4 md:grid-cols-2"><FieldInput field={{key:"w",label:"New Width (px)",type:"number"}} value={width} onChange={setWidth}/><FieldInput field={{key:"h",label:"New Height (px)",type:"number"}} value={height} onChange={setHeight}/></div>}{slug==="image-compressor"&&<div className="mt-4"><FieldInput field={{key:"q",label:"JPEG Quality (0.1â€“1)",type:"number",min:.1,max:1,step:"0.1"}} value={quality} onChange={setQuality}/></div>}<ActionButtons onRun={process} onReset={()=>{setFile(null);setUrl("")}} label={slug==="image-compressor"?"Compress Image":"Process Image"}/>{url&&<DownloadButton href={url} name={slug==="png-to-jpg"?"converted.jpg":slug==="svg-to-png"?"converted.png":"toolnest-image.jpg"}/>}</Box>;
 }
 
 /* ---------- PDF / document tools ---------- */
@@ -1580,8 +1765,8 @@ function PDFFilePicker({
           <div className="truncate font-semibold">{index+1}. {file.name}</div>
           <div className="text-xs text-gray-500">{(file.size/1024/1024).toFixed(2)} MB</div>
         </div>
-        {multiple && <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">↑</button>}
-        {multiple && <button type="button" onClick={()=>move(index,index+1)} disabled={index===files.length-1} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">↓</button>}
+        {multiple && <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">â†‘</button>}
+        {multiple && <button type="button" onClick={()=>move(index,index+1)} disabled={index===files.length-1} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">â†“</button>}
         <button type="button" onClick={()=>removeAt(index)} className="rounded-lg border border-red-200 px-2 py-1 text-sm font-semibold text-red-600">Remove</button>
       </div>)}
     </div>}
@@ -1680,7 +1865,7 @@ function PDFMergeTool() {
 
   return <Box>
     <PDFFilePicker multiple files={files} setFiles={setFiles}/>
-    <p className="mt-3 text-sm text-gray-500">The PDFs are merged in the order shown above. Use ↑/↓ to change the order.</p>
+    <p className="mt-3 text-sm text-gray-500">The PDFs are merged in the order shown above. Use â†‘/â†“ to change the order.</p>
     <ActionButtons onRun={run} onReset={()=>{setFiles([]);setUrl("");setError("")}} label={busy?"Merging...":"Merge PDFs"}/>
     <PDFError message={error}/>
     {url&&<DownloadButton href={url} name="merged.pdf">Download Merged PDF</DownloadButton>}
@@ -1755,7 +1940,7 @@ function PDFRotateTool() {
   return <Box>
     <PDFFilePicker files={files} setFiles={setFiles}/>
     <div className="mt-4">
-      <FieldInput field={{key:"angle",label:"Rotation",type:"select",options:["90","180","270"].map(x=>({value:x,label:`${x}° clockwise`}))}} value={angle} onChange={setAngle}/>
+      <FieldInput field={{key:"angle",label:"Rotation",type:"select",options:["90","180","270"].map(x=>({value:x,label:`${x}Â° clockwise`}))}} value={angle} onChange={setAngle}/>
     </div>
     <ActionButtons onRun={run} onReset={()=>{setFiles([]);setAngle("90");setUrl("");setError("")}} label={busy?"Rotating...":"Rotate PDF"}/>
     <PDFError message={error}/>
@@ -1820,3 +2005,5 @@ function parsePageSelection(input:string,count:number){
 /* ---------- Misc ---------- */
 
 export default ToolRunner;
+
+
