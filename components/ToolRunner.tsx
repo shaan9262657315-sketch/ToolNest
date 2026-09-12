@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
+import PDFTextEditorTool from "./PDFTextEditorTool";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { jsPDF } from "jspdf";
 import { PDFDocument, degrees } from "pdf-lib";
@@ -25,7 +26,7 @@ const n = (v: string) => {
 };
 
 const f = (v: number) =>
-  Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "â€”";
+  Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â";
 
 function Box({ children }: { children: React.ReactNode }) {
   return <div className="card p-6">{children}</div>;
@@ -482,19 +483,47 @@ export function ToolRunner({ slug }: { slug: string }) {
       );
 
     case "percentage-increase-calculator":
-      return (
-        <FormTool
-          fields={[
-            { key: "old", label: "Original Value", type: "number" },
-            { key: "new", label: "New Value", type: "number" },
-          ]}
-          compute={(v) => {
-            if (!n(v.old)) return "Original value must not be zero.";
-            const change = ((n(v.new) - n(v.old)) / n(v.old)) * 100;
-            return `${f(change)}% ${change >= 0 ? "increase" : "decrease"}`;
-          }}
-        />
-      );
+  return (
+    <FormTool
+      fields={[
+        {
+          key: "old",
+          label: "Original Value",
+          type: "number",
+          placeholder: "100",
+        },
+        {
+          key: "new",
+          label: "New Value",
+          type: "number",
+          placeholder: "125",
+        },
+      ]}
+      button="Calculate Change"
+      compute={(v) => {
+        const oldValue = n(v.old);
+        const newValue = n(v.new);
+
+        if (oldValue === 0) {
+          return "Original value must not be zero.";
+        }
+
+        const difference = newValue - oldValue;
+        const percentageChange = (difference / oldValue) * 100;
+
+        if (percentageChange > 0) {
+          return `Increase: ${f(percentageChange)}%\nAmount Increased: ${f(difference)}`;
+        }
+
+        if (percentageChange < 0) {
+          return `Decrease: ${f(Math.abs(percentageChange))}%\nAmount Decreased: ${f(Math.abs(difference))}`;
+        }
+
+        return "No Change: 0%";
+      }}
+      note="Percentage change is calculated from the original value."
+    />
+  );
 
     case "discount-calculator":
       return (
@@ -541,7 +570,7 @@ export function ToolRunner({ slug }: { slug: string }) {
             },
           ]}
           compute={(v) => `${f(n(v.cgpa) * 9.5)}%`}
-          note="Uses the common CGPA × 9.5 conversion. Check your institution's official formula if it differs."
+          note="Uses the common CGPA ÃƒÂ¯Ã‚Â¿Ã‚Â½ 9.5 conversion. Check your institution's official formula if it differs."
         />
       );
 
@@ -579,7 +608,7 @@ export function ToolRunner({ slug }: { slug: string }) {
             },
           ]}
           compute={(v) => `${f(n(v.sgpa) * 10)}%`}
-          note="Uses SGPA × 10 as a general conversion."
+          note="Uses SGPA ÃƒÂ¯Ã‚Â¿Ã‚Â½ 10 as a general conversion."
         />
       );
 
@@ -922,7 +951,7 @@ export function ToolRunner({ slug }: { slug: string }) {
           ]}
           compute={(v) => {
             const profit = (n(v.sell) - n(v.buy)) * n(v.quantity);
-            return `Profit/Loss: ${f(profit)}\nReturn: ${n(v.buy) ? f(((n(v.sell) - n(v.buy)) / n(v.buy)) * 100) : "â€”"}%`;
+            return `Profit/Loss: ${f(profit)}\nReturn: ${n(v.buy) ? f(((n(v.sell) - n(v.buy)) / n(v.buy)) * 100) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}%`;
           }}
         />
       );
@@ -1177,7 +1206,7 @@ export function ToolRunner({ slug }: { slug: string }) {
       return <TextTool button="Format JSON" transform={(text) => JSON.stringify(JSON.parse(text), null, 2)} />;
 
     case "json-validator":
-      return <TextTool button="Validate JSON" transform={(text) => { JSON.parse(text); return "Valid JSON âœ“"; }} />;
+      return <TextTool button="Validate JSON" transform={(text) => { JSON.parse(text); return "Valid JSON ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“"; }} />;
 
     case "csv-json-converter":
       return <CSVJSONTool direction="to-json" />;
@@ -1329,6 +1358,9 @@ export function ToolRunner({ slug }: { slug: string }) {
     case "pdf-rotate":
       return <PDFRotateTool />;
 
+    case "pdf-text-editor":
+      return <PDFTextEditorTool />;
+
     case "pdf-page-extractor":
       return <PDFSplitTool />;
 
@@ -1407,7 +1439,7 @@ function FractionTool() {
       <label className="mt-4 block space-y-2 text-sm font-semibold">
         Operation
         <select className="tool-input" value={op} onChange={(e) => setOp(e.target.value)}>
-          <option>+</option><option>-</option><option>Ã—</option><option>Ã·</option>
+          <option>+</option><option>-</option><option>ÃƒÆ’Ã¢â‚¬â€</option><option>ÃƒÆ’Ã‚Â·</option>
         </select>
       </label>
       <ActionButtons
@@ -1417,8 +1449,8 @@ function FractionTool() {
           let value = 0;
           if (op === "+") value = x / y + z / w;
           if (op === "-") value = x / y - z / w;
-          if (op === "Ã—") value = (x / y) * (z / w);
-          if (op === "Ã·") value = (x / y) / (z / w);
+          if (op === "ÃƒÆ’Ã¢â‚¬â€") value = (x / y) * (z / w);
+          if (op === "ÃƒÆ’Ã‚Â·") value = (x / y) / (z / w);
           setOut(`Decimal Result: ${f(value)}`);
         }}
         onReset={() => { setA(""); setB(""); setC(""); setD(""); setOut(""); }}
@@ -1699,23 +1731,484 @@ function GradePredictorTool() {
 }
 
 function FlashcardTool() {
-  const [cards,setCards]=useState("What is CPU?|Central Processing Unit\nWhat is RAM?|Random Access Memory");const [index,setIndex]=useState(0);const [show,setShow]=useState(false);
-  const parsed=cards.split(/\r?\n/).map(x=>x.split("|")).filter(x=>x.length>=2);
-  return <Box><textarea className="tool-input min-h-40" value={cards} onChange={e=>setCards(e.target.value)} placeholder="Question|Answer, one card per line..."/>{parsed.length>0&&<div className="mt-5 rounded-2xl border p-6"><p className="text-sm text-gray-500">Card {index+1} of {parsed.length}</p><h3 className="mt-3 text-xl font-black">{parsed[index][0]}</h3>{show&&<p className="mt-4">{parsed[index][1]}</p>}<div className="mt-5 flex flex-wrap gap-3"><button onClick={()=>setShow(v=>!v)} className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white">{show?"Hide Answer":"Show Answer"}</button><button onClick={()=>{setIndex((index+1)%parsed.length);setShow(false)}} className="rounded-xl border px-5 py-3 font-bold">Next</button></div></div>}</Box>;
+  const [cards, setCards] = useState(
+    "What is CPU?|Central Processing Unit\nWhat is RAM?|Random Access Memory\nWhat is ROM?|Read Only Memory"
+  );
+
+  const [index, setIndex] = useState(0);
+  const [show, setShow] = useState(false);
+  const [shuffle, setShuffle] = useState(false);
+
+  const parsed = cards
+    .split(/\r?\n/)
+    .map((line) => {
+      const parts = line.split("|");
+      return {
+        question: parts[0]?.trim() || "",
+        answer: parts.slice(1).join("|").trim(),
+      };
+    })
+    .filter((card) => card.question && card.answer);
+
+  const currentCard = parsed[index];
+
+  const nextCard = () => {
+    if (!parsed.length) return;
+
+    setIndex((prev) => (prev + 1) % parsed.length);
+    setShow(false);
+  };
+
+  const previousCard = () => {
+    if (!parsed.length) return;
+
+    setIndex((prev) => (prev - 1 + parsed.length) % parsed.length);
+    setShow(false);
+  };
+
+  const shuffleCards = () => {
+    if (!parsed.length) return;
+
+    const shuffled = [...parsed].sort(() => Math.random() - 0.5);
+
+    const newText = shuffled
+      .map((card) => `${card.question}|${card.answer}`)
+      .join("\n");
+
+    setCards(newText);
+    setIndex(0);
+    setShow(false);
+    setShuffle(true);
+  };
+
+  const resetCards = () => {
+    setCards(
+      "What is CPU?|Central Processing Unit\nWhat is RAM?|Random Access Memory\nWhat is ROM?|Read Only Memory"
+    );
+    setIndex(0);
+    setShow(false);
+    setShuffle(false);
+  };
+
+  return (
+    <Box>
+      <div className="space-y-4">
+        <div>
+          <label className="mb-2 block text-sm font-bold">
+            Enter Flashcards
+          </label>
+
+          <textarea
+            className="tool-input min-h-40"
+            value={cards}
+            onChange={(e) => {
+              setCards(e.target.value);
+              setIndex(0);
+              setShow(false);
+            }}
+            placeholder={
+              "Question|Answer\nQuestion|Answer\nQuestion|Answer"
+            }
+          />
+
+          <p className="mt-2 text-sm text-gray-500">
+            Format: <b>Question|Answer</b> ÃƒÂ¯Ã‚Â¿Ã‚Â½ one flashcard per line.
+          </p>
+        </div>
+
+        {parsed.length > 0 && currentCard && (
+          <div className="rounded-2xl border bg-white p-6 shadow-sm dark:bg-gray-950">
+            <div className="flex items-center justify-between gap-3">
+              <span className="rounded-full bg-indigo-100 px-3 py-1 text-sm font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                Card {index + 1} of {parsed.length}
+              </span>
+
+              {shuffle && (
+                <span className="text-sm font-semibold text-green-600">
+                  Shuffled
+                </span>
+              )}
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-gray-50 p-6 text-center dark:bg-gray-900">
+              <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                Question
+              </p>
+
+              <h3 className="mt-3 text-2xl font-black">
+                {currentCard.question}
+              </h3>
+
+              {show && (
+                <div className="mt-6 rounded-xl border bg-white p-5 dark:bg-gray-950">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                    Answer
+                  </p>
+
+                  <p className="mt-2 text-lg font-semibold">
+                    {currentCard.answer}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShow((value) => !value)}
+                className="rounded-xl bg-indigo-600 px-5 py-3 font-bold text-white hover:bg-indigo-700"
+              >
+                {show ? "Hide Answer" : "Show Answer"}
+              </button>
+
+              <button
+                type="button"
+                onClick={previousCard}
+                className="rounded-xl border px-5 py-3 font-bold hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                ? Previous
+              </button>
+
+              <button
+                type="button"
+                onClick={nextCard}
+                className="rounded-xl border px-5 py-3 font-bold hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                Next ?
+              </button>
+            </div>
+
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              <button
+                type="button"
+                onClick={shuffleCards}
+                className="rounded-xl border px-5 py-3 font-bold hover:bg-gray-50 dark:hover:bg-gray-900"
+              >
+                ?? Shuffle Cards
+              </button>
+
+              <button
+                type="button"
+                onClick={resetCards}
+                className="rounded-xl border border-red-200 px-5 py-3 font-bold text-red-600 hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        )}
+
+        {parsed.length === 0 && (
+          <div className="rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-sm font-semibold text-yellow-800 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-200">
+            Please enter at least one valid flashcard using:
+            <br />
+            <b>Question|Answer</b>
+          </div>
+        )}
+
+        <div className="rounded-xl border bg-gray-50 p-4 text-sm dark:bg-gray-900">
+          <p className="font-bold">How to use:</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5 text-gray-600 dark:text-gray-300">
+            <li>Write one question and answer on each line.</li>
+            <li>Separate the question and answer using |</li>
+            <li>Click Show Answer to reveal the answer.</li>
+            <li>Use Previous / Next to study.</li>
+            <li>Use Shuffle Cards for random revision.</li>
+          </ol>
+        </div>
+      </div>
+    </Box>
+  );
 }
 
 function MatrixTool() {
   const [a,setA]=useState("1 2\n3 4"),[b,setB]=useState("5 6\n7 8"),[op,setOp]=useState("+"),[out,setOut]=useState("");
   const parse=(s:string)=>s.trim().split(/\n/).map(r=>r.trim().split(/\s+/).map(Number));
-  return <Box><div className="grid gap-4 md:grid-cols-2"><textarea className="tool-input min-h-32" value={a} onChange={e=>setA(e.target.value)} /><textarea className="tool-input min-h-32" value={b} onChange={e=>setB(e.target.value)} /></div><select className="tool-input mt-4" value={op} onChange={e=>setOp(e.target.value)}><option>+</option><option>-</option><option>Ã—</option></select><ActionButtons onRun={()=>{const x=parse(a),y=parse(b);if(x.length!==2||y.length!==2||x.some(r=>r.length!==2)||y.some(r=>r.length!==2))return setOut("Enter two 2Ã—2 matrices.");const z=x.map((r,i)=>r.map((v,j)=>op==="+"?v+y[i][j]:op==="-"?v-y[i][j]:x[i][0]*y[0][j]+x[i][1]*y[1][j]));setOut(z.map(r=>r.join("  ")).join("\n"))}} onReset={()=>setOut("")} label="Calculate Matrix"/>{out&&<Result value={out}/>}</Box>;
+  return <Box><div className="grid gap-4 md:grid-cols-2"><textarea className="tool-input min-h-32" value={a} onChange={e=>setA(e.target.value)} /><textarea className="tool-input min-h-32" value={b} onChange={e=>setB(e.target.value)} /></div><select className="tool-input mt-4" value={op} onChange={e=>setOp(e.target.value)}><option>+</option><option>-</option><option>ÃƒÆ’Ã¢â‚¬â€</option></select><ActionButtons onRun={()=>{const x=parse(a),y=parse(b);if(x.length!==2||y.length!==2||x.some(r=>r.length!==2)||y.some(r=>r.length!==2))return setOut("Enter two 2ÃƒÆ’Ã¢â‚¬â€2 matrices.");const z=x.map((r,i)=>r.map((v,j)=>op==="+"?v+y[i][j]:op==="-"?v-y[i][j]:x[i][0]*y[0][j]+x[i][1]*y[1][j]));setOut(z.map(r=>r.join("  ")).join("\n"))}} onReset={()=>setOut("")} label="Calculate Matrix"/>{out&&<Result value={out}/>}</Box>;
 }
 
 /* ---------- Image tools ---------- */
 
-function ImageTool({slug}:{slug:string}) {
-  const [file,setFile]=useState<File|null>(null);const [url,setUrl]=useState("");const [width,setWidth]=useState("");const [height,setHeight]=useState("");const [quality,setQuality]=useState("0.8");
-  const process=()=>{if(!file)return;const img=new Image();const object=URL.createObjectURL(file);img.onload=()=>{const canvas=document.createElement("canvas");canvas.width=slug==="image-resizer"&&n(width)?n(width):img.width;canvas.height=slug==="image-resizer"&&n(height)?n(height):img.height;const ctx=canvas.getContext("2d");if(!ctx)return;ctx.drawImage(img,0,0,canvas.width,canvas.height);const type=slug==="png-to-jpg"?"image/jpeg":slug==="svg-to-png"?"image/png":"image/jpeg";canvas.toBlob(blob=>{if(blob)setUrl(URL.createObjectURL(blob))},type,slug==="image-compressor"?Math.max(.1,Math.min(1,n(quality)||.8)):.9);};img.src=object};
-  return <Box><input type="file" accept="image/*" onChange={e=>setFile(e.target.files?.[0]||null)} className="block w-full rounded-xl border p-3"/>{slug==="image-resizer"&&<div className="mt-4 grid gap-4 md:grid-cols-2"><FieldInput field={{key:"w",label:"New Width (px)",type:"number"}} value={width} onChange={setWidth}/><FieldInput field={{key:"h",label:"New Height (px)",type:"number"}} value={height} onChange={setHeight}/></div>}{slug==="image-compressor"&&<div className="mt-4"><FieldInput field={{key:"q",label:"JPEG Quality (0.1â€“1)",type:"number",min:.1,max:1,step:"0.1"}} value={quality} onChange={setQuality}/></div>}<ActionButtons onRun={process} onReset={()=>{setFile(null);setUrl("")}} label={slug==="image-compressor"?"Compress Image":"Process Image"}/>{url&&<DownloadButton href={url} name={slug==="png-to-jpg"?"converted.jpg":slug==="svg-to-png"?"converted.png":"toolnest-image.jpg"}/>}</Box>;
+function ImageTool({ slug }: { slug: string }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [url, setUrl] = useState("");
+  const [quality, setQuality] = useState("0.8");
+  const [originalSize, setOriginalSize] = useState(0);
+  const [compressedSize, setCompressedSize] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) {
+      return `${(bytes / 1024).toFixed(2)} KB`;
+    }
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
+  const compressionPercentage =
+    originalSize > 0 && compressedSize > 0
+      ? ((originalSize - compressedSize) / originalSize) * 100
+      : 0;
+
+  const process = () => {
+    if (!file) return;
+
+    setBusy(true);
+    setUrl("");
+    setCompressedSize(0);
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        URL.revokeObjectURL(objectUrl);
+        setBusy(false);
+        return;
+      }
+
+      /*
+       * White background is added before JPEG conversion.
+       * This prevents transparent PNG areas from becoming black.
+       */
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const selectedQuality = Math.max(
+        0.1,
+        Math.min(1, Number(quality) || 0.8)
+      );
+
+      canvas.toBlob(
+        (blob) => {
+          URL.revokeObjectURL(objectUrl);
+          setBusy(false);
+
+          if (!blob) return;
+
+          const resultUrl = URL.createObjectURL(blob);
+
+          setUrl(resultUrl);
+          setOriginalSize(file.size);
+          setCompressedSize(blob.size);
+        },
+        "image/jpeg",
+        selectedQuality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      setBusy(false);
+    };
+
+    img.src = objectUrl;
+  };
+
+  const reset = () => {
+    if (url) {
+      URL.revokeObjectURL(url);
+    }
+
+    setFile(null);
+    setUrl("");
+    setOriginalSize(0);
+    setCompressedSize(0);
+    setQuality("0.8");
+  };
+
+  return (
+    <Box>
+      <div className="space-y-5">
+        <div>
+          <label className="block text-sm font-bold">
+            Select Image
+          </label>
+
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const selectedFile = e.target.files?.[0] || null;
+
+              if (url) {
+                URL.revokeObjectURL(url);
+              }
+
+              setFile(selectedFile);
+              setUrl("");
+              setOriginalSize(selectedFile?.size || 0);
+              setCompressedSize(0);
+            }}
+            className="mt-2 block w-full rounded-xl border p-3"
+          />
+
+          <p className="mt-2 text-sm text-gray-500">
+            Supported formats: JPG, JPEG, PNG, WebP and other browser-supported images.
+          </p>
+        </div>
+
+        {file && (
+          <div className="rounded-2xl border bg-gray-50 p-5 dark:bg-gray-900">
+            <p className="text-sm font-bold">Selected Image</p>
+
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <div className="rounded-xl border bg-white p-4 dark:bg-gray-950">
+                <p className="text-xs text-gray-500">File Name</p>
+                <p className="mt-1 truncate font-semibold">
+                  {file.name}
+                </p>
+              </div>
+
+              <div className="rounded-xl border bg-white p-4 dark:bg-gray-950">
+                <p className="text-xs text-gray-500">Original Size</p>
+                <p className="mt-1 font-semibold">
+                  {formatSize(file.size)}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {slug === "image-compressor" && (
+          <div className="rounded-2xl border p-5">
+            <label className="block text-sm font-bold">
+              Compression Quality
+            </label>
+
+            <div className="mt-3 flex items-center gap-4">
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.1"
+                value={quality}
+                onChange={(e) => setQuality(e.target.value)}
+                className="w-full"
+              />
+
+              <span className="min-w-16 rounded-lg bg-indigo-100 px-3 py-2 text-center font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                {Math.round(Number(quality) * 100)}%
+              </span>
+            </div>
+
+            <p className="mt-2 text-sm text-gray-500">
+              Lower quality usually produces a smaller file.
+            </p>
+          </div>
+        )}
+
+        <ActionButtons
+          onRun={process}
+          onReset={reset}
+          label={
+            busy
+              ? "Compressing..."
+              : slug === "image-compressor"
+                ? "Compress Image"
+                : "Process Image"
+          }
+        />
+
+        {compressedSize > 0 && (
+          <div className="rounded-2xl border bg-gray-50 p-5 dark:bg-gray-900">
+            <h3 className="text-lg font-black">
+              Compression Result
+            </h3>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-3">
+              <div className="rounded-xl border bg-white p-4 dark:bg-gray-950">
+                <p className="text-xs text-gray-500">
+                  Original Size
+                </p>
+                <p className="mt-1 text-lg font-black">
+                  {formatSize(originalSize)}
+                </p>
+              </div>
+
+              <div className="rounded-xl border bg-white p-4 dark:bg-gray-950">
+                <p className="text-xs text-gray-500">
+                  Compressed Size
+                </p>
+                <p className="mt-1 text-lg font-black">
+                  {formatSize(compressedSize)}
+                </p>
+              </div>
+
+              <div className="rounded-xl border bg-white p-4 dark:bg-gray-950">
+                <p className="text-xs text-gray-500">
+                  Size Reduction
+                </p>
+                <p className="mt-1 text-lg font-black text-green-600">
+                  {compressionPercentage > 0
+                    ? `${compressionPercentage.toFixed(1)}%`
+                    : "0%"}
+                </p>
+              </div>
+            </div>
+
+            {compressionPercentage > 0 ? (
+              <p className="mt-4 rounded-xl bg-green-50 p-4 text-sm font-semibold text-green-700 dark:bg-green-950 dark:text-green-300">
+                ?? Your image is now{" "}
+                {compressionPercentage.toFixed(1)}% smaller.
+              </p>
+            ) : (
+              <p className="mt-4 rounded-xl bg-yellow-50 p-4 text-sm font-semibold text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300">
+                This image could not be reduced with the selected quality.
+                Try a lower quality setting.
+              </p>
+            )}
+          </div>
+        )}
+
+        {url && (
+          <div className="rounded-2xl border p-5">
+            <h3 className="text-lg font-black">
+              Compressed Image Preview
+            </h3>
+
+            <div className="mt-4 overflow-hidden rounded-2xl border bg-gray-100 p-3 dark:bg-gray-900">
+              <img
+                src={url}
+                alt="Compressed preview"
+                className="mx-auto max-h-96 max-w-full rounded-xl object-contain"
+              />
+            </div>
+
+            <div className="mt-5 flex justify-center">
+              <DownloadButton
+                href={url}
+                name="toolnest-compressed-image.jpg"
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="rounded-xl border bg-gray-50 p-4 text-sm dark:bg-gray-900">
+          <p className="font-bold">
+            How Image Compression Works
+          </p>
+
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-gray-600 dark:text-gray-300">
+            <li>Select an image from your device.</li>
+            <li>Choose the compression quality.</li>
+            <li>Click Compress Image.</li>
+            <li>Compare the original and compressed file sizes.</li>
+            <li>Download the compressed image.</li>
+          </ul>
+        </div>
+      </div>
+    </Box>
+  );
 }
 
 /* ---------- PDF / document tools ---------- */
@@ -1765,8 +2258,8 @@ function PDFFilePicker({
           <div className="truncate font-semibold">{index+1}. {file.name}</div>
           <div className="text-xs text-gray-500">{(file.size/1024/1024).toFixed(2)} MB</div>
         </div>
-        {multiple && <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">â†‘</button>}
-        {multiple && <button type="button" onClick={()=>move(index,index+1)} disabled={index===files.length-1} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">â†“</button>}
+        {multiple && <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ</button>}
+        {multiple && <button type="button" onClick={()=>move(index,index+1)} disabled={index===files.length-1} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“</button>}
         <button type="button" onClick={()=>removeAt(index)} className="rounded-lg border border-red-200 px-2 py-1 text-sm font-semibold text-red-600">Remove</button>
       </div>)}
     </div>}
@@ -1865,7 +2358,7 @@ function PDFMergeTool() {
 
   return <Box>
     <PDFFilePicker multiple files={files} setFiles={setFiles}/>
-    <p className="mt-3 text-sm text-gray-500">The PDFs are merged in the order shown above. Use â†‘/â†“ to change the order.</p>
+    <p className="mt-3 text-sm text-gray-500">The PDFs are merged in the order shown above. Use ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ/ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“ to change the order.</p>
     <ActionButtons onRun={run} onReset={()=>{setFiles([]);setUrl("");setError("")}} label={busy?"Merging...":"Merge PDFs"}/>
     <PDFError message={error}/>
     {url&&<DownloadButton href={url} name="merged.pdf">Download Merged PDF</DownloadButton>}
@@ -1940,7 +2433,7 @@ function PDFRotateTool() {
   return <Box>
     <PDFFilePicker files={files} setFiles={setFiles}/>
     <div className="mt-4">
-      <FieldInput field={{key:"angle",label:"Rotation",type:"select",options:["90","180","270"].map(x=>({value:x,label:`${x}Â° clockwise`}))}} value={angle} onChange={setAngle}/>
+      <FieldInput field={{key:"angle",label:"Rotation",type:"select",options:["90","180","270"].map(x=>({value:x,label:`${x}Ãƒâ€šÃ‚Â° clockwise`}))}} value={angle} onChange={setAngle}/>
     </div>
     <ActionButtons onRun={run} onReset={()=>{setFiles([]);setAngle("90");setUrl("");setError("")}} label={busy?"Rotating...":"Rotate PDF"}/>
     <PDFError message={error}/>
@@ -2005,5 +2498,13 @@ function parsePageSelection(input:string,count:number){
 /* ---------- Misc ---------- */
 
 export default ToolRunner;
+
+
+
+
+
+
+
+
 
 
