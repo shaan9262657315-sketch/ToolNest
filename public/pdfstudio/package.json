@@ -1,0 +1,28 @@
+{
+  "name": "pdfstudio",
+  "version": "1.0.0",
+  "description": "Browser-based PDF editor — merge, split, rotate, reorder, sign and annotate PDFs entirely on your own machine.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "pdf",
+    "pdf-editor",
+    "esign",
+    "merge-pdf",
+    "split-pdf",
+    "annotate",
+    "privacy"
+  ],
+  "author": "kuldeepcodes",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kuldeepcodes/pdfstudio.git"
+  }
+}
