@@ -1,6 +1,7 @@
 ﻿import "./globals.css";
 import { Header } from "@/components/Header";
 import type { Metadata } from "next";
+import Script from "next/script";
 
 const SITE_URL = "https://tool-nest-phi.vercel.app";
 
@@ -70,6 +71,20 @@ export default function RootLayout({
       <body>
         <Header />
         {children}
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-HLFJ5DQ7C5"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-HLFJ5DQ7C5');
+          `}
+        </Script>
       </body>
     </html>
   );
