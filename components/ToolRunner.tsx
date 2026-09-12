@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+import PDFToWordTool from "./PDFToWordTool";
 import PDFTextEditorTool from "./PDFTextEditorTool";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -26,7 +27,7 @@ const n = (v: string) => {
 };
 
 const f = (v: number) =>
-  Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â";
+  Number.isFinite(v) ? String(Math.round(v * 100) / 100) : "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â";
 
 function Box({ children }: { children: React.ReactNode }) {
   return <div className="card p-6">{children}</div>;
@@ -570,7 +571,7 @@ export function ToolRunner({ slug }: { slug: string }) {
             },
           ]}
           compute={(v) => `${f(n(v.cgpa) * 9.5)}%`}
-          note="Uses the common CGPA ÃƒÂ¯Ã‚Â¿Ã‚Â½ 9.5 conversion. Check your institution's official formula if it differs."
+          note="Uses the common CGPA ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½ 9.5 conversion. Check your institution's official formula if it differs."
         />
       );
 
@@ -608,7 +609,7 @@ export function ToolRunner({ slug }: { slug: string }) {
             },
           ]}
           compute={(v) => `${f(n(v.sgpa) * 10)}%`}
-          note="Uses SGPA ÃƒÂ¯Ã‚Â¿Ã‚Â½ 10 as a general conversion."
+          note="Uses SGPA ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½ 10 as a general conversion."
         />
       );
 
@@ -951,7 +952,7 @@ export function ToolRunner({ slug }: { slug: string }) {
           ]}
           compute={(v) => {
             const profit = (n(v.sell) - n(v.buy)) * n(v.quantity);
-            return `Profit/Loss: ${f(profit)}\nReturn: ${n(v.buy) ? f(((n(v.sell) - n(v.buy)) / n(v.buy)) * 100) : "ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â"}%`;
+            return `Profit/Loss: ${f(profit)}\nReturn: ${n(v.buy) ? f(((n(v.sell) - n(v.buy)) / n(v.buy)) * 100) : "ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â"}%`;
           }}
         />
       );
@@ -1206,7 +1207,7 @@ export function ToolRunner({ slug }: { slug: string }) {
       return <TextTool button="Format JSON" transform={(text) => JSON.stringify(JSON.parse(text), null, 2)} />;
 
     case "json-validator":
-      return <TextTool button="Validate JSON" transform={(text) => { JSON.parse(text); return "Valid JSON ÃƒÂ¢Ã…â€œÃ¢â‚¬Å“"; }} />;
+      return <TextTool button="Validate JSON" transform={(text) => { JSON.parse(text); return "Valid JSON ÃƒÆ’Ã‚Â¢Ãƒâ€¦Ã¢â‚¬Å“ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ"; }} />;
 
     case "csv-json-converter":
       return <CSVJSONTool direction="to-json" />;
@@ -1366,6 +1367,8 @@ export function ToolRunner({ slug }: { slug: string }) {
 
     case "word-to-pdf":
       return <WordToPDFTool />;
+    case "pdf-to-word":
+      return <PDFToWordTool />;
 
     default:
       return (
@@ -1439,7 +1442,7 @@ function FractionTool() {
       <label className="mt-4 block space-y-2 text-sm font-semibold">
         Operation
         <select className="tool-input" value={op} onChange={(e) => setOp(e.target.value)}>
-          <option>+</option><option>-</option><option>ÃƒÆ’Ã¢â‚¬â€</option><option>ÃƒÆ’Ã‚Â·</option>
+          <option>+</option><option>-</option><option>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</option><option>ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â·</option>
         </select>
       </label>
       <ActionButtons
@@ -1449,8 +1452,8 @@ function FractionTool() {
           let value = 0;
           if (op === "+") value = x / y + z / w;
           if (op === "-") value = x / y - z / w;
-          if (op === "ÃƒÆ’Ã¢â‚¬â€") value = (x / y) * (z / w);
-          if (op === "ÃƒÆ’Ã‚Â·") value = (x / y) / (z / w);
+          if (op === "ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â") value = (x / y) * (z / w);
+          if (op === "ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â·") value = (x / y) / (z / w);
           setOut(`Decimal Result: ${f(value)}`);
         }}
         onReset={() => { setA(""); setB(""); setC(""); setD(""); setOut(""); }}
@@ -1812,7 +1815,7 @@ function FlashcardTool() {
           />
 
           <p className="mt-2 text-sm text-gray-500">
-            Format: <b>Question|Answer</b> ÃƒÂ¯Ã‚Â¿Ã‚Â½ one flashcard per line.
+            Format: <b>Question|Answer</b> ÃƒÆ’Ã‚Â¯Ãƒâ€šÃ‚Â¿Ãƒâ€šÃ‚Â½ one flashcard per line.
           </p>
         </div>
 
@@ -1924,7 +1927,7 @@ function FlashcardTool() {
 function MatrixTool() {
   const [a,setA]=useState("1 2\n3 4"),[b,setB]=useState("5 6\n7 8"),[op,setOp]=useState("+"),[out,setOut]=useState("");
   const parse=(s:string)=>s.trim().split(/\n/).map(r=>r.trim().split(/\s+/).map(Number));
-  return <Box><div className="grid gap-4 md:grid-cols-2"><textarea className="tool-input min-h-32" value={a} onChange={e=>setA(e.target.value)} /><textarea className="tool-input min-h-32" value={b} onChange={e=>setB(e.target.value)} /></div><select className="tool-input mt-4" value={op} onChange={e=>setOp(e.target.value)}><option>+</option><option>-</option><option>ÃƒÆ’Ã¢â‚¬â€</option></select><ActionButtons onRun={()=>{const x=parse(a),y=parse(b);if(x.length!==2||y.length!==2||x.some(r=>r.length!==2)||y.some(r=>r.length!==2))return setOut("Enter two 2ÃƒÆ’Ã¢â‚¬â€2 matrices.");const z=x.map((r,i)=>r.map((v,j)=>op==="+"?v+y[i][j]:op==="-"?v-y[i][j]:x[i][0]*y[0][j]+x[i][1]*y[1][j]));setOut(z.map(r=>r.join("  ")).join("\n"))}} onReset={()=>setOut("")} label="Calculate Matrix"/>{out&&<Result value={out}/>}</Box>;
+  return <Box><div className="grid gap-4 md:grid-cols-2"><textarea className="tool-input min-h-32" value={a} onChange={e=>setA(e.target.value)} /><textarea className="tool-input min-h-32" value={b} onChange={e=>setB(e.target.value)} /></div><select className="tool-input mt-4" value={op} onChange={e=>setOp(e.target.value)}><option>+</option><option>-</option><option>ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</option></select><ActionButtons onRun={()=>{const x=parse(a),y=parse(b);if(x.length!==2||y.length!==2||x.some(r=>r.length!==2)||y.some(r=>r.length!==2))return setOut("Enter two 2ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â2 matrices.");const z=x.map((r,i)=>r.map((v,j)=>op==="+"?v+y[i][j]:op==="-"?v-y[i][j]:x[i][0]*y[0][j]+x[i][1]*y[1][j]));setOut(z.map(r=>r.join("  ")).join("\n"))}} onReset={()=>setOut("")} label="Calculate Matrix"/>{out&&<Result value={out}/>}</Box>;
 }
 
 /* ---------- Image tools ---------- */
@@ -2258,8 +2261,8 @@ function PDFFilePicker({
           <div className="truncate font-semibold">{index+1}. {file.name}</div>
           <div className="text-xs text-gray-500">{(file.size/1024/1024).toFixed(2)} MB</div>
         </div>
-        {multiple && <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ</button>}
-        {multiple && <button type="button" onClick={()=>move(index,index+1)} disabled={index===files.length-1} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“</button>}
+        {multiple && <button type="button" onClick={()=>move(index,index-1)} disabled={index===0} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“</button>}
+        {multiple && <button type="button" onClick={()=>move(index,index+1)} disabled={index===files.length-1} className="rounded-lg border px-2 py-1 text-sm disabled:opacity-40">ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ</button>}
         <button type="button" onClick={()=>removeAt(index)} className="rounded-lg border border-red-200 px-2 py-1 text-sm font-semibold text-red-600">Remove</button>
       </div>)}
     </div>}
@@ -2358,7 +2361,7 @@ function PDFMergeTool() {
 
   return <Box>
     <PDFFilePicker multiple files={files} setFiles={setFiles}/>
-    <p className="mt-3 text-sm text-gray-500">The PDFs are merged in the order shown above. Use ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Ëœ/ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬Å“ to change the order.</p>
+    <p className="mt-3 text-sm text-gray-500">The PDFs are merged in the order shown above. Use ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã‹Å“/ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œ to change the order.</p>
     <ActionButtons onRun={run} onReset={()=>{setFiles([]);setUrl("");setError("")}} label={busy?"Merging...":"Merge PDFs"}/>
     <PDFError message={error}/>
     {url&&<DownloadButton href={url} name="merged.pdf">Download Merged PDF</DownloadButton>}
@@ -2433,7 +2436,7 @@ function PDFRotateTool() {
   return <Box>
     <PDFFilePicker files={files} setFiles={setFiles}/>
     <div className="mt-4">
-      <FieldInput field={{key:"angle",label:"Rotation",type:"select",options:["90","180","270"].map(x=>({value:x,label:`${x}Ãƒâ€šÃ‚Â° clockwise`}))}} value={angle} onChange={setAngle}/>
+      <FieldInput field={{key:"angle",label:"Rotation",type:"select",options:["90","180","270"].map(x=>({value:x,label:`${x}ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° clockwise`}))}} value={angle} onChange={setAngle}/>
     </div>
     <ActionButtons onRun={run} onReset={()=>{setFiles([]);setAngle("90");setUrl("");setError("")}} label={busy?"Rotating...":"Rotate PDF"}/>
     <PDFError message={error}/>
@@ -2498,6 +2501,9 @@ function parsePageSelection(input:string,count:number){
 /* ---------- Misc ---------- */
 
 export default ToolRunner;
+
+
+
 
 
 
